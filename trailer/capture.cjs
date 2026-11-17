@@ -11,6 +11,17 @@ const HIDE = '.demo-bar,.ad-badge{display:none!important}'
   await p.evaluate(() => localStorage.clear())
   await p.reload(); await p.waitForTimeout(600)
   await p.click('text=Entrar como fan'); await p.waitForTimeout(400)
+  // nombres del ranking para el trailer (en orden de puntos: 1º a 4º)
+  await p.evaluate((names) => {
+    const key = 'santinococf-demo-v1'
+    const db = JSON.parse(localStorage.getItem(key))
+    for (const [id, username] of Object.entries(names)) {
+      const prof = db.profiles.find((x) => x.id === id)
+      if (prof) prof.username = username
+    }
+    localStorage.setItem(key, JSON.stringify(db))
+  }, { u1: 'sitesoyfranco_', u2: 'fakkuu_martinezz', u3: 'thommyclose', u4: 'chino_cochino' })
+  await p.reload(); await p.waitForTimeout(600)
   const go = async (hash, name, prep) => {
     await p.goto(BASE + '#' + hash); await p.addStyleTag({ content: HIDE }); await p.waitForTimeout(1300)
     if (prep) await prep()
