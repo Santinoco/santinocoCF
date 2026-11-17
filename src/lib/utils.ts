@@ -1,4 +1,7 @@
-import { supabase } from './supabase'
+import { isDemo, supabase } from './supabase'
+
+/** confirm() del navegador; en la demo se saltea porque el visor no muestra diálogos. */
+export const confirmAction = (msg: string) => isDemo || window.confirm(msg)
 
 export function friendlyError(e: unknown): string {
   const msg = String((e as { message?: string })?.message ?? e)

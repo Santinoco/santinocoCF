@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { SITE, TICKER_FALLBACK } from '../config'
 import { useAuth } from '../lib/auth'
-import { isConfigured, supabase } from '../lib/supabase'
+import { demoLogin, resetDemo } from '../lib/demo'
+import { isConfigured, isDemo, supabase } from '../lib/supabase'
 
 const ADD_OPTIONS = [
   { to: '/casting', emoji: '💘', title: 'Postular candidata', sub: 'Casting oficial', color: 'pink' },
@@ -47,6 +48,21 @@ export default function Layout() {
       </header>
 
       <Ticker />
+
+      {isDemo && (
+        <div className="demo-bar">
+          <span><b>MODO DEMO</b> · datos de prueba, solo en tu navegador</span>
+          <div className="row-tight">
+            {profile?.is_admin ? (
+              <Link to="/admin" className="btn btn-sm">Panel admin</Link>
+            ) : (
+              <button className="btn btn-sm" onClick={() => demoLogin('admin')}>Entrar como Santino (admin)</button>
+            )}
+            {!session && <button className="btn btn-sm" onClick={() => demoLogin('fan')}>Entrar como fan</button>}
+            <button className="btn btn-sm btn-ghost" onClick={resetDemo}>Reiniciar</button>
+          </div>
+        </div>
+      )}
 
       {!isConfigured && (
         <div className="config-warning">

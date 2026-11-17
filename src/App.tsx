@@ -1,8 +1,9 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Link, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import { Spinner } from './components/ui'
 import { AuthProvider } from './lib/auth'
+import { isDemo } from './lib/supabase'
 import Casting from './pages/Casting'
 import Chisme from './pages/Chisme'
 import Entrar from './pages/Entrar'
@@ -15,12 +16,15 @@ import Perfil from './pages/Perfil'
 import Publicidad from './pages/Publicidad'
 import Ranking from './pages/Ranking'
 
+// En la demo usamos rutas con # porque el hosting de prueba no reescribe URLs
+const Router = isDemo ? HashRouter : BrowserRouter
+
 const Admin = lazy(() => import('./pages/admin/Admin'))
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <Router>
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Home />} />
@@ -38,7 +42,7 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+      </Router>
     </AuthProvider>
   )
 }

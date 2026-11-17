@@ -3,7 +3,7 @@ import { ErrorBox, LoginGate, PageHead, Spinner } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { isConfigured, supabase } from '../lib/supabase'
 import type { Comment } from '../lib/types'
-import { friendlyError, timeAgo } from '../lib/utils'
+import { confirmAction, friendlyError, timeAgo } from '../lib/utils'
 
 const PAGE = 30
 const COLORS = ['yellow', 'pink', 'blue', 'green', 'purple']
@@ -54,7 +54,7 @@ export default function Muro() {
   }
 
   async function remove(id: string) {
-    if (!confirm('¿Borrar este comentario?')) return
+    if (!confirmAction('¿Borrar este comentario?')) return
     const { error } = await supabase.from('comments').delete().eq('id', id)
     if (!error) setItems(items.filter((c) => c.id !== id))
   }

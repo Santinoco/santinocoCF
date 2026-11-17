@@ -4,7 +4,7 @@ import { Spinner } from '../../components/ui'
 import { useAuth } from '../../lib/auth'
 import { supabase } from '../../lib/supabase'
 import type { AdRequest, Candidate, Comment, Gossip, News, VideoIdea } from '../../lib/types'
-import { formatDate, friendlyError, signedUrl, timeAgo } from '../../lib/utils'
+import { confirmAction, formatDate, friendlyError, signedUrl, timeAgo } from '../../lib/utils'
 import NewsEditor from './NewsEditor'
 
 const TABS = [
@@ -110,7 +110,7 @@ function useRows<T extends { id: string }>(table: string, select = '*, profiles(
     setRows((r) => r?.map((x) => (x.id === id ? ({ ...x, status } as T) : x)) ?? null)
   }
   async function remove(id: string) {
-    if (!confirm('¿Borrar definitivamente? (si suma puntos, se le restan al usuario)')) return
+    if (!confirmAction('¿Borrar definitivamente? (si suma puntos, se le restan al usuario)')) return
     const { error } = await supabase.from(table).delete().eq('id', id)
     if (error) return alert(friendlyError(error))
     setRows((r) => r?.filter((x) => x.id !== id) ?? null)
