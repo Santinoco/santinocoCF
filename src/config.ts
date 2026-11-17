@@ -7,9 +7,21 @@ export const SITE = {
   instagramUrl: 'https://instagram.com/santinococf',
 }
 
-// Tus fotos bizarras para el fondo del Casting.
-// Ponelas en /public/santino/ y listalas acá, ej: '/santino/foto1.jpg'
-export const SANTINO_PHOTOS: string[] = []
+// Fotos del Casting (están en /public/santino/)
+export const CASTING = {
+  hero: '/santino/espartano.jpg',
+  polaroids: [
+    { src: '/santino/gimnasio.jpg', caption: 'Modo gimnasio', pos: 'top' },
+    { src: '/santino/selfie.jpg', caption: 'Modo simpático', pos: 'center 20%' },
+  ],
+  // La "ficha del soltero". Editá libremente.
+  facts: [
+    { label: 'Estado', value: 'Soltero' },
+    { label: 'Experiencia', value: 'Espartano' },
+    { label: 'Vive en', value: 'El gimnasio' },
+    { label: 'Busca', value: 'Alguien que lo banque' },
+  ],
+}
 
 export const NEWS_CATEGORIES = [
   'Último momento',

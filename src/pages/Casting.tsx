@@ -1,20 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { ErrorBox, Field, ImagePicker, LoginGate, Success } from '../components/ui'
-import { SANTINO_PHOTOS } from '../config'
+import { CASTING } from '../config'
 import { useAuth } from '../lib/auth'
 import { usePoints } from '../lib/hooks'
 import { supabase } from '../lib/supabase'
 import { cleanHandle, friendlyError, uploadPrivate } from '../lib/utils'
 
-// Posiciones de las fotos de fondo (se repiten si hay más fotos)
-const SPOTS = [
-  { top: '2%', left: '-4%', rot: -9 },
-  { top: '6%', right: '-5%', rot: 8 },
-  { top: '42%', left: '-7%', rot: 6 },
-  { top: '48%', right: '-6%', rot: -7 },
-  { top: '82%', left: '-3%', rot: -4 },
-  { top: '86%', right: '-4%', rot: 10 },
-]
+const asset = (p: string) => import.meta.env.BASE_URL + p.replace(/^\//, '')
 
 export default function Casting() {
   const { session } = useAuth()
@@ -26,8 +18,6 @@ export default function Casting() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
-
-  const photos = SANTINO_PHOTOS.length ? SANTINO_PHOTOS : SPOTS.map(() => '')
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -58,29 +48,36 @@ export default function Casting() {
 
   return (
     <div className="casting">
-      <div className="casting-bg" aria-hidden="true">
-        {photos.map((src, i) => {
-          const s = SPOTS[i % SPOTS.length]
-          return (
-            <div
-              key={i}
-              className="polaroid"
-              style={{ top: s.top, left: s.left, right: s.right, ['--rot' as string]: `${s.rot}deg`, animationDelay: `${i * -1.3}s` }}
-            >
-              {src ? <img src={src} alt="" /> : <div className="polaroid-ph">tu foto<br />bizarra<br />acá</div>}
+      <div className="casting-layout">
+        <section className="bachelor" aria-label="El soltero">
+          <div className="bachelor-photo">
+            <img src={asset(CASTING.hero)} alt="Santino vestido de espartano" />
+            <div className="bachelor-overlay">
+              <span className="sticker bg-yellow pulse">Casting oficial · +{points.candidata} pts</span>
+              <h1>Se busca novia para <span className="hl-pink-solid">Santino</span></h1>
             </div>
-          )
-        })}
-      </div>
+          </div>
+          {CASTING.polaroids.map((p, i) => (
+            <figure key={p.src} className={`polaroid polaroid-${i + 1}`}>
+              <span className="tape" aria-hidden="true" />
+              <img src={asset(p.src)} alt={p.caption} style={{ objectPosition: p.pos }} loading="lazy" />
+              <figcaption>{p.caption}</figcaption>
+            </figure>
+          ))}
+          <dl className="facts">
+            {CASTING.facts.map((f) => (
+              <div key={f.label} className="fact">
+                <dt>{f.label}</dt>
+                <dd>{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
 
-      <div className="casting-content stack-lg narrow">
-        <div className="page-head casting-head">
-          <span className="sticker bg-pink pulse">Casting oficial · +{points.candidata} pts</span>
-          <h1>Se busca novia<br />para <span className="hl hl-pink">Santino</span></h1>
-          <p className="lead">
-            Postulá a tu candidata (o postulate vos 👀). Las postulaciones me llegan solo a mí: nadie más las ve.
-          </p>
-        </div>
+      <div className="casting-content stack-lg">
+        <p className="lead casting-lead">
+          Postulá a tu candidata (o postulate vos 👀). Las postulaciones me llegan solo a mí: nadie más las ve.
+        </p>
 
         <LoginGate what="postular una candidata">
           {done ? (
@@ -111,6 +108,7 @@ export default function Casting() {
             </form>
           )}
         </LoginGate>
+      </div>
       </div>
     </div>
   )
