@@ -3,10 +3,10 @@ import { ErrorBox, Field, ImagePicker, LoginGate, PageHead, Success } from '../c
 import { useAuth } from '../lib/auth'
 import { usePoints } from '../lib/hooks'
 import { supabase } from '../lib/supabase'
-import { friendlyError, uploadPrivate } from '../lib/utils'
+import { friendlyError, notifyAdmin, uploadPrivate } from '../lib/utils'
 
 export default function Chisme() {
-  const { session } = useAuth()
+  const { session, profile } = useAuth()
   const points = usePoints()
   const [protagonist, setProtagonist] = useState('')
   const [content, setContent] = useState('')
@@ -28,6 +28,12 @@ export default function Chisme() {
         image_path,
       })
       if (error) throw error
+      notifyAdmin('Nuevo chisme 🤫', {
+        'Enviado por': profile?.username,
+        Protagonista: protagonist.trim(),
+        Chisme: content.trim(),
+        Foto: image_path ? 'Sí (miralo en el panel)' : null,
+      })
       setDone(true)
     } catch (err) {
       setError(friendlyError(err))

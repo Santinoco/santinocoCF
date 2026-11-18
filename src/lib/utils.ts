@@ -108,3 +108,28 @@ export function normalizeInstagramUrl(raw: string): string | null {
     return null
   }
 }
+
+// ---------------------------------------------------------------------
+// Aviso por mail al admin cada vez que alguien manda un formulario.
+// Usa Web3Forms (gratis): la clave VITE_WEB3FORMS_KEY está atada al mail
+// que la creó, así que el mail nunca queda escrito en el código.
+// Nunca rompe el envío: si falla, el formulario igual quedó guardado.
+// ---------------------------------------------------------------------
+const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY
+
+export function notifyAdmin(subject: string, fields: Record<string, string | null | undefined>) {
+  if (isDemo || !WEB3FORMS_KEY) return
+  const data: Record<string, string> = {}
+  for (const [k, v] of Object.entries(fields)) if (v) data[k] = v
+  fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      access_key: WEB3FORMS_KEY,
+      subject: `SantinocoCF · ${subject}`,
+      from_name: 'SantinocoCF',
+      ...data,
+      'Ver en el panel': `${location.origin}/admin`,
+    }),
+  }).catch(() => { /* el aviso es opcional */ })
+}

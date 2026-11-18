@@ -54,6 +54,14 @@ Build: `npm run build` · Output: `dist` · Cargá las mismas variables `VITE_*`
   poné la *site key* en `VITE_TURNSTILE_SITE_KEY` y la *secret key* en Supabase → *Authentication → Attack Protection → Captcha*.
   El widget aparece solo en registro/login.
 
+## Aviso por mail de los formularios
+
+Cada chisme, candidata, pedido de publicidad o idea te llega por mail (además de quedar en `/admin`).
+1. Entrá a https://web3forms.com, poné el mail donde querés recibirlos y te mandan una *Access Key*.
+2. Cargala como `VITE_WEB3FORMS_KEY` en el panel del hosting (y en `.env` si probás local) y volvé a deployar.
+
+Sin la clave, la página anda igual, solo que no manda mails. Las fotos no viajan en el mail: se ven en el panel.
+
 ## Puntos
 
 Se calculan en vivo desde lo cargado, así que **si borrás spam, los puntos de ese usuario bajan solos**.

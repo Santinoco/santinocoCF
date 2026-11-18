@@ -4,12 +4,12 @@ import { CASTING } from '../config'
 import { useAuth } from '../lib/auth'
 import { usePoints } from '../lib/hooks'
 import { supabase } from '../lib/supabase'
-import { cleanHandle, friendlyError, uploadPrivate } from '../lib/utils'
+import { cleanHandle, friendlyError, notifyAdmin, uploadPrivate } from '../lib/utils'
 
 const asset = (p: string) => import.meta.env.BASE_URL + p.replace(/^\//, '')
 
 export default function Casting() {
-  const { session } = useAuth()
+  const { session, profile } = useAuth()
   const points = usePoints()
   const [name, setName] = useState('')
   const [instagram, setInstagram] = useState('')
@@ -34,6 +34,13 @@ export default function Casting() {
         photo_path,
       })
       if (error) throw error
+      notifyAdmin('Nueva candidata 💘', {
+        'Enviado por': profile?.username,
+        Nombre: name.trim(),
+        Instagram: ig ? `https://instagram.com/${ig}` : null,
+        'Por qué': reason.trim(),
+        Foto: photo_path ? 'Sí (mirala en el panel)' : null,
+      })
       setDone(true)
     } catch (err) {
       setError(friendlyError(err))

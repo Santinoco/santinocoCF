@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { ErrorBox, Field, LoginGate, PageHead, Success } from '../components/ui'
 import { supabase } from '../lib/supabase'
-import { friendlyError } from '../lib/utils'
+import { useAuth } from '../lib/auth'
+import { friendlyError, notifyAdmin } from '../lib/utils'
 
 export default function Ideas() {
+  const { profile } = useAuth()
   const [content, setContent] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -16,6 +18,7 @@ export default function Ideas() {
     const { error } = await supabase.from('video_ideas').insert({ content: content.trim() })
     setBusy(false)
     if (error) return setError(friendlyError(error))
+    notifyAdmin('Nueva idea para video 💡', { 'Enviado por': profile?.username, Idea: content.trim() })
     setDone(true)
   }
 

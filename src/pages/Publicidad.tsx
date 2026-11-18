@@ -2,10 +2,10 @@ import { useState, type FormEvent } from 'react'
 import { ErrorBox, Field, ImagePicker, LoginGate, Success } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
-import { cleanHandle, friendlyError, uploadPrivate } from '../lib/utils'
+import { cleanHandle, friendlyError, notifyAdmin, uploadPrivate } from '../lib/utils'
 
 export default function Publicidad() {
-  const { session } = useAuth()
+  const { session, profile } = useAuth()
   const [business, setBusiness] = useState('')
   const [instagram, setInstagram] = useState('')
   const [contact, setContact] = useState('')
@@ -29,6 +29,15 @@ export default function Publicidad() {
         image_path,
       })
       if (error) throw error
+      const ig = cleanHandle(instagram)
+      notifyAdmin('Nuevo pedido de publicidad 📣', {
+        'Enviado por': profile?.username,
+        Marca: business.trim(),
+        Instagram: ig ? `https://instagram.com/${ig}` : null,
+        Contacto: contact.trim(),
+        'Qué quiere que diga': description.trim(),
+        Imagen: image_path ? 'Sí (mirala en el panel)' : null,
+      })
       setDone(true)
     } catch (err) {
       setError(friendlyError(err))
