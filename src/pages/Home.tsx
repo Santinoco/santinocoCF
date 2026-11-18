@@ -4,7 +4,9 @@ import { SITE } from '../config'
 import { usePoints } from '../lib/hooks'
 import { isConfigured, supabase } from '../lib/supabase'
 import type { LeaderRow, News } from '../lib/types'
+import InstagramFeed from '../components/InstagramFeed'
 import NewsCard from '../components/NewsCard'
+import SponsorCard from '../components/Sponsor'
 
 export default function Home() {
   const [news, setNews] = useState<News[] | null>(null)
@@ -72,6 +74,10 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      <SponsorCard />
+
+      <InstagramFeed />
 
       <section className="mini-grid">
         <Link to="/chisme" className="mini bg-yellow">

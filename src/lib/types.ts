@@ -72,3 +72,9 @@ export interface PointRule {
   points: number
   label: string
 }
+
+export interface InstagramPost {
+  id: string
+  url: string
+  created_at: string
+}

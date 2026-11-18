@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Spinner } from '../../components/ui'
 import { useAuth } from '../../lib/auth'
 import { supabase } from '../../lib/supabase'
-import type { AdRequest, Candidate, Comment, Gossip, News, VideoIdea } from '../../lib/types'
-import { confirmAction, formatDate, friendlyError, signedUrl, timeAgo } from '../../lib/utils'
+import type { AdRequest, Candidate, Comment, Gossip, InstagramPost, News, VideoIdea } from '../../lib/types'
+import { confirmAction, formatDate, friendlyError, normalizeInstagramUrl, signedUrl, timeAgo } from '../../lib/utils'
 import NewsEditor from './NewsEditor'
 
 const TABS = [
@@ -14,6 +14,7 @@ const TABS = [
   { id: 'publicidad', label: '📣 Publicidad', table: 'ad_requests', fresh: 'pendiente' },
   { id: 'ideas', label: '💡 Ideas', table: 'video_ideas', fresh: 'nueva' },
   { id: 'comentarios', label: '💬 Comentarios' },
+  { id: 'instagram', label: '📸 Instagram' },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
@@ -86,6 +87,7 @@ export default function Admin() {
       {tab === 'publicidad' && <AdsAdmin />}
       {tab === 'ideas' && <IdeasAdmin />}
       {tab === 'comentarios' && <CommentsAdmin />}
+      {tab === 'instagram' && <InstagramAdmin />}
     </div>
   )
 }
@@ -338,5 +340,59 @@ function CommentsAdmin() {
         </div>
       )}
     />
+  )
+}
+
+function InstagramAdmin() {
+  const { rows, error, reload } = useRows<InstagramPost>('instagram_posts', '*')
+  const [url, setUrl] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  async function add(e: FormEvent) {
+    e.preventDefault()
+    const clean = normalizeInstagramUrl(url)
+    if (!clean) return setMsg('Ese link no parece de una publicación o reel de Instagram.')
+    setBusy(true)
+    setMsg('')
+    const { error } = await supabase.from('instagram_posts').insert({ url: clean })
+    setBusy(false)
+    if (error) return setMsg(friendlyError(error))
+    setUrl('')
+    reload()
+  }
+  async function remove(id: string) {
+    if (!confirmAction('¿Sacar esta publicación de la página?')) return
+    const { error } = await supabase.from('instagram_posts').delete().eq('id', id)
+    if (error) return alert(friendlyError(error))
+    reload()
+  }
+
+  return (
+    <div className="stack">
+      <form className="card stack-sm" onSubmit={add}>
+        <strong>Agregar publicación al inicio</strong>
+        <small className="muted">En Instagram: ⋯ → Copiar enlace, y pegalo acá. Se muestran las últimas que cargues.</small>
+        <div className="row-tight">
+          <input className="grow" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://www.instagram.com/p/..." required />
+          <button className="btn btn-pink" disabled={busy}>{busy ? 'Agregando…' : 'Agregar'}</button>
+        </div>
+        {msg && <div className="error-box">{msg}</div>}
+      </form>
+      <List
+        rows={rows}
+        error={error}
+        empty="Todavía no agregaste publicaciones. En el inicio se muestra un botón a tu Instagram."
+        render={(p) => (
+          <div className="row-between">
+            <div className="stack-sm grow">
+              <small className="muted">{formatDate(p.created_at)}</small>
+              <a href={p.url} target="_blank" rel="noreferrer" className="ig-admin-link">{p.url}</a>
+            </div>
+            <button className="btn btn-sm btn-ghost" onClick={() => remove(p.id)}>Sacar</button>
+          </div>
+        )}
+      />
+    </div>
   )
 }

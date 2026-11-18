@@ -99,6 +99,21 @@ drop policy if exists "admin novedades" on public.news;
 create policy "admin novedades" on public.news for all using (public.is_admin()) with check (public.is_admin());
 
 -- ---------------------------------------------------------------------
+-- PUBLICACIONES DE INSTAGRAM (las carga el admin, se ven en el inicio)
+-- ---------------------------------------------------------------------
+create table if not exists public.instagram_posts (
+  id          uuid primary key default gen_random_uuid(),
+  url         text not null unique check (url ~ '^https://www\.instagram\.com/(p|reel|tv)/[A-Za-z0-9_-]+/$'),
+  created_at  timestamptz not null default now()
+);
+
+alter table public.instagram_posts enable row level security;
+drop policy if exists "leer instagram" on public.instagram_posts;
+create policy "leer instagram" on public.instagram_posts for select using (true);
+drop policy if exists "admin instagram" on public.instagram_posts;
+create policy "admin instagram" on public.instagram_posts for all using (public.is_admin()) with check (public.is_admin());
+
+-- ---------------------------------------------------------------------
 -- ENVÍOS PRIVADOS (solo los ve el que lo mandó y el admin)
 -- chismes · candidatas · ideas · pedidos de publicidad
 -- ---------------------------------------------------------------------

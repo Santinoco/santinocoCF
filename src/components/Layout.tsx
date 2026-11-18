@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { SITE, TICKER_FALLBACK } from '../config'
 import { useAuth } from '../lib/auth'
+import { SponsorStrip } from './Sponsor'
 import { demoLogin, resetDemo } from '../lib/demo'
 import { isConfigured, isDemo, supabase } from '../lib/supabase'
 
@@ -75,6 +76,7 @@ export default function Layout() {
       </main>
 
       <footer className="footer">
+        <SponsorStrip />
         <p>
           {SITE.name} · Portal de noticias no verificadas desde {new Date().getFullYear()}
         </p>

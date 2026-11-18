@@ -95,3 +95,16 @@ export async function signedUrl(path: string): Promise<string | null> {
   const { data } = await supabase.storage.from('uploads').createSignedUrl(path, 3600)
   return data?.signedUrl ?? null
 }
+
+// Normaliza un link de post/reel: saca parámetros (?igsh=...) y deja la barra final
+export function normalizeInstagramUrl(raw: string): string | null {
+  try {
+    const u = new URL(raw.trim())
+    if (!/(^|\.)instagram\.com$/.test(u.hostname)) return null
+    const m = u.pathname.match(/^\/(?:[\w.]+\/)?(p|reel|tv)\/([\w-]+)/)
+    if (!m) return null
+    return `https://www.instagram.com/${m[1]}/${m[2]}/`
+  } catch {
+    return null
+  }
+}

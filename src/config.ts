@@ -7,6 +7,25 @@ export const SITE = {
   instagramUrl: 'https://instagram.com/santinococf',
 }
 
+// Sponsor oficial (aparece en el inicio y en el pie de página)
+export const SPONSOR = {
+  name: 'YoureBrand',
+  logo: '/sponsors/yourebrand.png',
+  tagline: 'Agencia integral de Marketing Digital',
+  description: 'Producción de contenido, Community Management, Ads Management y más.',
+  stats: [
+    { value: '+400', label: 'pymes' },
+    { value: '20 mil', label: 'seguidores' },
+  ],
+  instagramHandle: '@yourebrand.es',
+  instagramUrl: 'https://www.instagram.com/yourebrand.es/',
+  webUrl: 'https://yourebrand.com.ar',
+  webLabel: 'yourebrand.com.ar',
+}
+
+// Cuántas publicaciones de Instagram mostrar en el inicio
+export const INSTAGRAM_FEED_LIMIT = 6
+
 // Fotos del Casting (están en /public/santino/)
 export const CASTING = {
   hero: '/santino/espartano.jpg',

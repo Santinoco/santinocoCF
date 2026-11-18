@@ -77,7 +77,7 @@ function seed(): Store {
     { action: 'chisme', points: 10, label: 'Cargar un chisme' },
     { action: 'candidata', points: 25, label: 'Postular una candidata' },
   ]
-  return { profiles, news, comments, gossip, candidates, video_ideas, ad_requests, point_rules }
+  return { profiles, news, comments, gossip, candidates, video_ideas, ad_requests, point_rules, instagram_posts: [] as Row[] }
 }
 
 let db: Store
@@ -211,7 +211,7 @@ class Query implements PromiseLike<{ data: unknown; error: unknown; count?: numb
       const items = (Array.isArray(this.payload) ? this.payload : [this.payload!]).map((p) => ({
         id: crypto.randomUUID(),
         created_at: new Date().toISOString(),
-        ...(this.table === 'news' ? {} : { user_id: uid() }),
+        ...(['news', 'instagram_posts'].includes(this.table) ? {} : { user_id: uid() }),
         ...(this.table === 'gossip' ? { status: 'nuevo' } : {}),
         ...(this.table === 'candidates' ? { status: 'en_evaluacion' } : {}),
         ...(this.table === 'video_ideas' ? { status: 'nueva' } : {}),
