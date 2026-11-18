@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { SITE, TICKER_FALLBACK } from '../config'
 import { useAuth } from '../lib/auth'
-import { SponsorStrip } from './Sponsor'
+import { SponsorPopup, SponsorStrip } from './Sponsor'
 import { demoLogin, resetDemo } from '../lib/demo'
 import { isConfigured, isDemo, supabase } from '../lib/supabase'
 
@@ -85,6 +85,8 @@ export default function Layout() {
       </footer>
 
       {location.pathname !== '/publicidad' && <AdBadge />}
+
+      <SponsorPopup />
 
       <nav className="bottom-nav" aria-label="Navegación">
         <NavLink to="/" end><span className="bn-ico">🏠</span>Inicio</NavLink>

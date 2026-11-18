@@ -23,6 +23,14 @@ export const SPONSOR = {
   webLabel: 'yourebrand.com.ar',
 }
 
+// Popup del sponsor (una vez por visita). Poné enabled: false para apagarlo.
+export const SPONSOR_POPUP = {
+  enabled: true,
+  delayMs: 4000,
+  title: '¿Tu marca necesita crecer en redes?',
+  text: 'YoureBrand te hace el contenido, te maneja las redes y los anuncios. Ya lo hicieron con más de 400 pymes.',
+}
+
 // Cuántas publicaciones de Instagram mostrar en el inicio
 export const INSTAGRAM_FEED_LIMIT = 6
 
