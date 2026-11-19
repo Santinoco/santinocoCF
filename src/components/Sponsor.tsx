@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { SPONSOR, SPONSOR_POPUP } from '../config'
+import { ADS, SPONSOR, SPONSOR_POPUP } from '../config'
 
 export default function SponsorCard() {
   return (
@@ -27,6 +27,30 @@ export default function SponsorCard() {
           {SPONSOR.webLabel} ↗
         </a>
       </div>
+    </section>
+  )
+}
+
+// Publicidades gratis (las que pidieron en /publicidad y se aprobaron)
+export function AdCards() {
+  if (!ADS.length) return null
+  return (
+    <section className="stack" aria-label="Publicidades">
+      {ADS.map((ad) => (
+        <article key={ad.name} className="ad-card">
+          <span className="sticker sticker-sm bg-blue sponsor-kicker">Publicidad</span>
+          <img src={ad.logo} alt={`Logo de ${ad.name}`} className="ad-logo" />
+          <p className="ad-desc">{ad.description}</p>
+          <div className="sponsor-actions">
+            <a href={ad.instagramUrl} target="_blank" rel="noreferrer sponsored" className="btn btn-pink">
+              {ad.instagramHandle} ↗
+            </a>
+            <a href={ad.whatsappUrl} target="_blank" rel="noreferrer sponsored" className="btn">
+              📞 {ad.phone}
+            </a>
+          </div>
+        </article>
+      ))}
     </section>
   )
 }

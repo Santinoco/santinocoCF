@@ -31,6 +31,20 @@ export const SPONSOR_POPUP = {
   text: 'YoureBrand te hace el contenido, te maneja las redes y los anuncios. Ya lo hicieron con más de 400 pymes.',
 }
 
+// Publicidades gratis aprobadas (aparecen en el inicio, debajo del sponsor).
+// Para sumar una nueva, agregá un objeto a la lista y el logo en /public/sponsors/.
+export const ADS = [
+  {
+    name: 'La Blanquita',
+    logo: '/sponsors/la-blanquita.png',
+    description: 'Hacemos mates, cuchillos, botas y todo tipo de productos de campo.',
+    instagramHandle: '@lablanquita.campo',
+    instagramUrl: 'https://www.instagram.com/lablanquita.campo/',
+    phone: '11 2283-9560',
+    whatsappUrl: 'https://wa.me/5491122839560',
+  },
+]
+
 // Cuántas publicaciones de Instagram mostrar en el inicio
 export const INSTAGRAM_FEED_LIMIT = 6
 

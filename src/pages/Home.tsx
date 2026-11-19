@@ -6,7 +6,7 @@ import { isConfigured, supabase } from '../lib/supabase'
 import type { LeaderRow, News } from '../lib/types'
 import InstagramFeed from '../components/InstagramFeed'
 import NewsCard from '../components/NewsCard'
-import SponsorCard from '../components/Sponsor'
+import SponsorCard, { AdCards } from '../components/Sponsor'
 
 export default function Home() {
   const [news, setNews] = useState<News[] | null>(null)
@@ -76,6 +76,8 @@ export default function Home() {
       </section>
 
       <SponsorCard />
+
+      <AdCards />
 
       <InstagramFeed />
 

@@ -652,6 +652,18 @@ input:focus, textarea:focus, select:focus { box-shadow: 3px 3px 0 var(--pink); }
 }
 .sponsor-strip img { border-radius: 50%; }
 
+/* publicidades gratis */
+.ad-card {
+  position: relative;
+  background: #fff; color: var(--ink);
+  border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+  padding: 30px 18px 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
+}
+.ad-logo { width: 100%; max-width: 420px; height: auto; }
+.ad-desc { margin: 0; font-weight: 600; }
+.ad-card .sponsor-actions { width: 100%; }
+
 /* popup */
 .sponsor-pop-backdrop {
   position: fixed; inset: 0; z-index: 120;
