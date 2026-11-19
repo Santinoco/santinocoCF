@@ -157,106 +157,112 @@ def brass(ms, dur, att=0.06):
     return sig * env
 
 
-# ------------------------------------------------------------------ armado
-# 1. drone grave de tensión (0 → 39)
-t = tv(39.0)
-drone = 0.35 * supersaw(midi(26), t, 5, 0.004) + 0.8 * supersaw(midi(38), t, 5, 0.004) + 0.7 * supersaw(midi(45), t, 4, 0.004) + 0.45 * supersaw(midi(50), t, 4, 0.004)
-dl, dh = filt(drone, 500, order=4), filt(drone, 1600, order=4)
-w = np.clip(t / 35, 0, 1)
-drone = dl * (1 - w) + dh * w
-amp = np.interp(t, [0, 3.0, 14, 35, 38.95, 39.0], [0.15, 0.5, 0.55, 0.5, 0.5, 0.0])
-add(music, drone * amp, 0, gain=0.9)
-# nota aguda inquietante (0 → 17)
-t2 = tv(17.0)
-eerie = (np.sin(2 * np.pi * midi(74) * t2) + 0.5 * np.sin(2 * np.pi * midi(81) * t2)) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.35 * t2))
-add(music, eerie * np.interp(t2, [0, 2, 14, 17], [0, 0.03, 0.04, 0]), 0, pan=0.3)
+def main():
+    # ------------------------------------------------------------------ armado
+    # 1. drone grave de tensión (0 → 39)
+    t = tv(39.0)
+    drone = 0.35 * supersaw(midi(26), t, 5, 0.004) + 0.8 * supersaw(midi(38), t, 5, 0.004) + 0.7 * supersaw(midi(45), t, 4, 0.004) + 0.45 * supersaw(midi(50), t, 4, 0.004)
+    dl, dh = filt(drone, 500, order=4), filt(drone, 1600, order=4)
+    w = np.clip(t / 35, 0, 1)
+    drone = dl * (1 - w) + dh * w
+    amp = np.interp(t, [0, 3.0, 14, 35, 38.95, 39.0], [0.15, 0.5, 0.55, 0.5, 0.5, 0.0])
+    add(music, drone * amp, 0, gain=0.9)
+    # nota aguda inquietante (0 → 17)
+    t2 = tv(17.0)
+    eerie = (np.sin(2 * np.pi * midi(74) * t2) + 0.5 * np.sin(2 * np.pi * midi(81) * t2)) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.35 * t2))
+    add(music, eerie * np.interp(t2, [0, 2, 14, 17], [0, 0.03, 0.04, 0]), 0, pan=0.3)
 
-# 2. ostinato de cuerdas + pad (17 → 39), 120 bpm, Dm – Bb – F – C
-CHORDS = [(50, 53, 57), (46, 50, 53), (53, 57, 60), (48, 52, 55)]
-PATTERN = [0, 0, 2, 0, 1, 0, 2, 3]
-bar_t, i = 17.0, 0
-while bar_t < 39.0 - 1e-6:
-    ch = CHORDS[i % 4]
-    prog = (bar_t - 17) / 22
-    for k_, idx in enumerate(PATTERN):
-        nt = bar_t + k_ * 0.25
-        if nt >= 39.0:
-            break
-        m = ch[0] + 12 if idx == 3 else ch[idx]
-        g = 0.4 + 0.45 * prog + (0.12 if k_ % 2 == 0 else 0)
-        add(music, string_note(m, bright=1800 + 2200 * prog), nt, pan=-0.35 if k_ % 2 else 0.35, gain=g)
-        add(music, string_note(m + 12, bright=3000), nt, pan=0.6 if k_ % 2 else -0.6, gain=g * 0.35 * prog)
-    add(music, pad([m_ - 12 for m_ in ch] + list(ch), min(2.0, 39.0 - bar_t), att=0.5, cut=1100 + 900 * prog), bar_t, gain=0.55 + 0.35 * prog)
-    bar_t += 2.0
-    i += 1
+    # 2. ostinato de cuerdas + pad (17 → 39), 120 bpm, Dm – Bb – F – C
+    CHORDS = [(50, 53, 57), (46, 50, 53), (53, 57, 60), (48, 52, 55)]
+    PATTERN = [0, 0, 2, 0, 1, 0, 2, 3]
+    bar_t, i = 17.0, 0
+    while bar_t < 39.0 - 1e-6:
+        ch = CHORDS[i % 4]
+        prog = (bar_t - 17) / 22
+        for k_, idx in enumerate(PATTERN):
+            nt = bar_t + k_ * 0.25
+            if nt >= 39.0:
+                break
+            m = ch[0] + 12 if idx == 3 else ch[idx]
+            g = 0.4 + 0.45 * prog + (0.12 if k_ % 2 == 0 else 0)
+            add(music, string_note(m, bright=1800 + 2200 * prog), nt, pan=-0.35 if k_ % 2 else 0.35, gain=g)
+            add(music, string_note(m + 12, bright=3000), nt, pan=0.6 if k_ % 2 else -0.6, gain=g * 0.35 * prog)
+        add(music, pad([m_ - 12 for m_ in ch] + list(ch), min(2.0, 39.0 - bar_t), att=0.5, cut=1100 + 900 * prog), bar_t, gain=0.55 + 0.35 * prog)
+        bar_t += 2.0
+        i += 1
 
-# 3. tambores
-beats = []
-for bt in np.arange(17.0, 31.0, 2.0):
-    beats += [(bt, 1.0), (bt + 1.0, 0.8), (bt + 1.5, 0.45)]
-for bt in np.arange(31.0, 35.0, 0.5):
-    beats += [(bt, 0.95), (bt + 0.25, 0.4)]
-tt = 35.0
-step = 0.25
-while tt < 39.0:
-    beats.append((tt, 0.55 + 0.45 * (tt - 35) / 4))
-    if tt > 37.0:
-        step = 0.125
-    tt += step
-for bt, v in beats:
-    add(music, taiko(v), bt, pan=rng.uniform(-0.25, 0.25), gain=0.75)
+    # 3. tambores
+    beats = []
+    for bt in np.arange(17.0, 31.0, 2.0):
+        beats += [(bt, 1.0), (bt + 1.0, 0.8), (bt + 1.5, 0.45)]
+    for bt in np.arange(31.0, 35.0, 0.5):
+        beats += [(bt, 0.95), (bt + 0.25, 0.4)]
+    tt = 35.0
+    step = 0.25
+    while tt < 39.0:
+        beats.append((tt, 0.55 + 0.45 * (tt - 35) / 4))
+        if tt > 37.0:
+            step = 0.125
+        tt += step
+    for bt, v in beats:
+        add(music, taiko(v), bt, pan=rng.uniform(-0.25, 0.25), gain=0.75)
 
-# 4. logo y cierre: metales + pad final
-add(music, brass([38, 45, 50, 53, 57, 62, 65, 69], 3.85), 39.6, gain=1.1)
-add(music, pad([50, 57, 62, 65, 69, 74], 3.8, att=0.8, cut=3200), 39.7, gain=0.7)
-fin = brass([38, 45, 50, 53, 57, 62, 65, 69], 3.45, att=0.04)
-fin *= np.interp(tv(3.45), [0, 2.4, 3.45], [1, 0.7, 0])
-add(music, fin, 43.5, gain=1.1)
-add(music, pad([26, 38, 45], 3.45, att=0.05, cut=600) * np.interp(tv(3.45), [0, 3.45], [1, 0]), 43.5, gain=0.4)
+    # 4. logo y cierre: metales + pad final
+    add(music, brass([38, 45, 50, 53, 57, 62, 65, 69], 3.85), 39.6, gain=1.1)
+    add(music, pad([50, 57, 62, 65, 69, 74], 3.8, att=0.8, cut=3200), 39.7, gain=0.7)
+    fin = brass([38, 45, 50, 53, 57, 62, 65, 69], 3.45, att=0.04)
+    fin *= np.interp(tv(3.45), [0, 2.4, 3.45], [1, 0.7, 0])
+    add(music, fin, 43.5, gain=1.1)
+    add(music, pad([26, 38, 45], 3.45, att=0.05, cut=600) * np.interp(tv(3.45), [0, 3.45], [1, 0]), 43.5, gain=0.4)
 
-# 5. efectos
-for b in BRAAMS:
-    dur = 3.4 if b < 43 else DURATION - b + 0.3
-    add(sfx, braam(dur), b, gain=1.0)
-    add(sfx, taiko(1.0), b, gain=1.0)
-for b in BOOMS:
-    add(sfx, boom(3.0), b, gain=0.7)
-for h in HITS:
-    add(sfx, metal_hit(), h, pan=rng.uniform(-0.2, 0.2), gain=0.55)
-for wh in WHOOSHES:
-    add(sfx, whoosh(0.9), wh - 0.55, gain=0.35)
-for r0, r1 in RISERS:
-    add(sfx, riser(r1 - r0), r0, gain=0.45)
-for c in MONTAGE_CUTS[1:]:
-    add(sfx, whoosh(0.35), c - 0.18, gain=0.22)
-    add(sfx, metal_hit(0.6), c, pan=rng.uniform(-0.5, 0.5), gain=0.18)
+    # 5. efectos
+    for b in BRAAMS:
+        dur = 3.4 if b < 43 else DURATION - b + 0.3
+        add(sfx, braam(dur), b, gain=1.0)
+        add(sfx, taiko(1.0), b, gain=1.0)
+    for b in BOOMS:
+        add(sfx, boom(3.0), b, gain=0.7)
+    for h in HITS:
+        add(sfx, metal_hit(), h, pan=rng.uniform(-0.2, 0.2), gain=0.55)
+    for wh in WHOOSHES:
+        add(sfx, whoosh(0.9), wh - 0.55, gain=0.35)
+    for r0, r1 in RISERS:
+        add(sfx, riser(r1 - r0), r0, gain=0.45)
+    for c in MONTAGE_CUTS[1:]:
+        add(sfx, whoosh(0.35), c - 0.18, gain=0.22)
+        add(sfx, metal_hit(0.6), c, pan=rng.uniform(-0.5, 0.5), gain=0.18)
 
-# 6. silencio antes del logo
-gate = np.ones(N)
-a, b = int(38.97 * SR), int(39.6 * SR)
-gate[a:b] = 0
-gate[a - 480:a] = np.linspace(1, 0, 480)
-mix = music + sfx * 0.9
-mix *= gate[:, None]
+    # 6. silencio antes del logo
+    gate = np.ones(N)
+    a, b = int(38.97 * SR), int(39.6 * SR)
+    gate[a:b] = 0
+    gate[a - 480:a] = np.linspace(1, 0, 480)
+    mix = music + sfx * 0.9
+    mix *= gate[:, None]
 
-# 7. reverb de sala grande
-ir_t = tv(3.2)
-ir = rng.normal(0, 1, (len(ir_t), 2)) * np.exp(-ir_t * 2.4)[:, None]
-ir[:, 0] = filt(ir[:, 0], 5000)
-ir[:, 1] = filt(ir[:, 1], 5000)
-ir /= np.sqrt((ir ** 2).sum(0))
-wet = np.stack([fftconvolve(mix[:, ch], ir[:, ch])[:N] for ch in range(2)], 1)
-out = mix * 0.8 + wet * 0.55
-out[:, 0] = filt(out[:, 0], 45, 'high')
-out[:, 1] = filt(out[:, 1], 45, 'high')
+    # 7. reverb de sala grande
+    ir_t = tv(3.2)
+    ir = rng.normal(0, 1, (len(ir_t), 2)) * np.exp(-ir_t * 2.4)[:, None]
+    ir[:, 0] = filt(ir[:, 0], 5000)
+    ir[:, 1] = filt(ir[:, 1], 5000)
+    ir /= np.sqrt((ir ** 2).sum(0))
+    wet = np.stack([fftconvolve(mix[:, ch], ir[:, ch])[:N] for ch in range(2)], 1)
+    out = mix * 0.8 + wet * 0.55
+    out[:, 0] = filt(out[:, 0], 45, 'high')
+    out[:, 1] = filt(out[:, 1], 45, 'high')
 
-# 8. master
-out /= np.abs(out).max() + 1e-9
-out = np.tanh(out * 1.6) / np.tanh(1.6)
-out *= 0.89 / np.abs(out).max()
-end_fade = np.ones(N)
-e0 = int((DURATION - 0.6) * SR)
-end_fade[e0:] = np.linspace(1, 0, N - e0)
-out *= end_fade[:, None]
-wavfile.write(os.path.join(OUT, 'audio.wav'), SR, (out * 32767).astype(np.int16))
-print('audio listo', out.shape[0] / SR, 's')
+    # 8. master
+    out /= np.abs(out).max() + 1e-9
+    out = np.tanh(out * 1.6) / np.tanh(1.6)
+    out *= 0.89 / np.abs(out).max()
+    end_fade = np.ones(N)
+    e0 = int((DURATION - 0.6) * SR)
+    end_fade[e0:] = np.linspace(1, 0, N - e0)
+    out *= end_fade[:, None]
+    wavfile.write(os.path.join(OUT, 'audio.wav'), SR, (out * 32767).astype(np.int16))
+    print('audio listo', out.shape[0] / SR, 's')
+
+
+
+if __name__ == '__main__':
+    main()
