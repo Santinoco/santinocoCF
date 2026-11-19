@@ -23,10 +23,14 @@ export const SPONSOR = {
   webLabel: 'yourebrand.com.ar',
 }
 
-// Popup del sponsor (una vez por visita). Poné enabled: false para apagarlo.
+// Popup de publicidad (una vez por visita). Poné enabled: false para apagarlo.
+// En cada visita se sortea qué marca sale: sponsorWeight es el peso de YoureBrand
+// y cada publicidad de ADS tiene su popupWeight (0 = nunca sale en el popup).
+// Ej: sponsor 2 y La Blanquita 1 → YoureBrand sale 2 de cada 3 veces.
 export const SPONSOR_POPUP = {
   enabled: true,
   delayMs: 4000,
+  sponsorWeight: 2,
   title: '¿Tu marca necesita crecer en redes?',
   text: 'YoureBrand te hace el contenido, te maneja las redes y los anuncios. Ya lo hicieron con más de 400 pymes.',
 }
@@ -42,6 +46,8 @@ export const ADS = [
     instagramUrl: 'https://www.instagram.com/lablanquita.campo/',
     phone: '11 2283-9560',
     whatsappUrl: 'https://wa.me/5491122839560',
+    popupWeight: 1,
+    popupTitle: '¿Te falta un buen mate?',
   },
 ]
 

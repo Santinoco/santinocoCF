@@ -73,47 +73,92 @@ function markSeen() {
   try { sessionStorage.setItem(SEEN_KEY, '1') } catch { /* sin storage */ }
 }
 
-// Popup del sponsor: aparece una vez por visita, a los pocos segundos de entrar
+type Ad = (typeof ADS)[number]
+type PopupPick = { kind: 'sponsor' } | { kind: 'ad'; ad: Ad }
+
+// Sortea qué publicidad sale en el popup según los pesos de config.ts
+function pickPopup(): PopupPick | null {
+  const options: { pick: PopupPick; weight: number }[] = [
+    { pick: { kind: 'sponsor' } as PopupPick, weight: SPONSOR_POPUP.sponsorWeight },
+    ...ADS.map((ad) => ({ pick: { kind: 'ad', ad } as PopupPick, weight: ad.popupWeight })),
+  ].filter((o) => o.weight > 0)
+  const total = options.reduce((sum, o) => sum + o.weight, 0)
+  if (!total) return null
+  let r = Math.random() * total
+  for (const o of options) {
+    r -= o.weight
+    if (r < 0) return o.pick
+  }
+  return options[options.length - 1].pick
+}
+
+// Popup de publicidad: aparece una vez por visita, a los pocos segundos de entrar.
+// Cada vez sale una marca distinta, sorteada según los pesos.
 export function SponsorPopup() {
-  const [open, setOpen] = useState(false)
+  const [pick, setPick] = useState<PopupPick | null>(null)
   const { pathname } = useLocation()
   const blocked = pathname.startsWith('/admin') || pathname.startsWith('/entrar')
+  const close = () => setPick(null)
 
   useEffect(() => {
     if (!SPONSOR_POPUP.enabled || blocked || alreadySeen()) return
-    const t = setTimeout(() => { setOpen(true); markSeen() }, SPONSOR_POPUP.delayMs)
+    const t = setTimeout(() => {
+      const p = pickPopup()
+      if (p) setPick(p)
+      markSeen()
+    }, SPONSOR_POPUP.delayMs)
     return () => clearTimeout(t)
   }, [blocked])
 
   useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    if (!pick) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPick(null) }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+  }, [pick])
 
-  if (!open) return null
+  if (!pick) return null
+  const name = pick.kind === 'sponsor' ? SPONSOR.name : pick.ad.name
   return (
-    <div className="sponsor-pop-backdrop" onClick={() => setOpen(false)}>
-      <div className="sponsor-pop" role="dialog" aria-modal="true" aria-label={`Publicidad: ${SPONSOR.name}`} onClick={(e) => e.stopPropagation()}>
-        <button className="sponsor-pop-close" onClick={() => setOpen(false)} aria-label="Cerrar">✕</button>
-        <span className="sticker sticker-sm bg-yellow sponsor-kicker">Sponsor oficial</span>
-        <img src={SPONSOR.logo} alt={`Logo de ${SPONSOR.name}`} className="sponsor-pop-logo" width={110} height={110} />
-        <h2>{SPONSOR_POPUP.title}</h2>
-        <p className="sponsor-tagline">{SPONSOR.tagline}</p>
-        <p className="sponsor-desc">{SPONSOR_POPUP.text}</p>
-        <ul className="sponsor-stats">
-          {SPONSOR.stats.map((s) => (
-            <li key={s.label}><b>{s.value}</b> {s.label}</li>
-          ))}
-        </ul>
-        <a href={SPONSOR.instagramUrl} target="_blank" rel="noreferrer sponsored" className="btn btn-pink btn-block" onClick={() => setOpen(false)}>
-          Seguir {SPONSOR.instagramHandle} ↗
-        </a>
-        <a href={SPONSOR.webUrl} target="_blank" rel="noreferrer sponsored" className="btn btn-block" onClick={() => setOpen(false)}>
-          {SPONSOR.webLabel} ↗
-        </a>
-        <button className="sponsor-pop-skip" onClick={() => setOpen(false)}>Ahora no</button>
+    <div className="sponsor-pop-backdrop" onClick={close}>
+      <div className="sponsor-pop" role="dialog" aria-modal="true" aria-label={`Publicidad: ${name}`} onClick={(e) => e.stopPropagation()}>
+        <button className="sponsor-pop-close" onClick={close} aria-label="Cerrar">✕</button>
+        {pick.kind === 'sponsor' ? (
+          <>
+            <span className="sticker sticker-sm bg-yellow sponsor-kicker">Sponsor oficial</span>
+            <img src={SPONSOR.logo} alt={`Logo de ${SPONSOR.name}`} className="sponsor-pop-logo" width={110} height={110} />
+            <h2>{SPONSOR_POPUP.title}</h2>
+            <p className="sponsor-tagline">{SPONSOR.tagline}</p>
+            <p className="sponsor-desc">{SPONSOR_POPUP.text}</p>
+            <ul className="sponsor-stats">
+              {SPONSOR.stats.map((s) => (
+                <li key={s.label}><b>{s.value}</b> {s.label}</li>
+              ))}
+            </ul>
+            <a href={SPONSOR.instagramUrl} target="_blank" rel="noreferrer sponsored" className="btn btn-pink btn-block" onClick={close}>
+              Seguir {SPONSOR.instagramHandle} ↗
+            </a>
+            <a href={SPONSOR.webUrl} target="_blank" rel="noreferrer sponsored" className="btn btn-block" onClick={close}>
+              {SPONSOR.webLabel} ↗
+            </a>
+          </>
+        ) : (
+          <>
+            <span className="sticker sticker-sm bg-blue sponsor-kicker">Publicidad</span>
+            <div className="sponsor-pop-banner">
+              <img src={pick.ad.logo} alt={`Logo de ${pick.ad.name}`} />
+            </div>
+            {pick.ad.popupTitle && <h2>{pick.ad.popupTitle}</h2>}
+            <p className="sponsor-desc">{pick.ad.description}</p>
+            <a href={pick.ad.instagramUrl} target="_blank" rel="noreferrer sponsored" className="btn btn-pink btn-block" onClick={close}>
+              Seguir {pick.ad.instagramHandle} ↗
+            </a>
+            <a href={pick.ad.whatsappUrl} target="_blank" rel="noreferrer sponsored" className="btn btn-block" onClick={close}>
+              📞 {pick.ad.phone}
+            </a>
+          </>
+        )}
+        <button className="sponsor-pop-skip" onClick={close}>Ahora no</button>
       </div>
     </div>
   )
