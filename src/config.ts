@@ -3,8 +3,8 @@
 export const SITE = {
   name: 'SantinocoCF',
   tagline: 'El portal de noticias que nadie pidió',
-  instagramHandle: '@santinococf',
-  instagramUrl: 'https://instagram.com/santinococf',
+  instagramHandle: '@santinoco.cf',
+  instagramUrl: 'https://www.instagram.com/santinoco.cf/',
 }
 
 // Sponsor oficial (aparece en el inicio y en el pie de página)

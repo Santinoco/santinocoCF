@@ -54,6 +54,12 @@ function seed(): Store {
     { id: 'c3', user_id: 'u3', content: 'Santino contestá los mensajes', created_at: ago(26) },
     { id: 'c4', user_id: 'u4', content: 'Postulé a mi prima, después no digan que no ayudo', created_at: ago(40) },
   ]
+  const news_comments = [
+    { id: 'nc1', news_id: 'n1', parent_id: null, user_id: 'u2', content: '¿Una chilena? ¿A su edad? Se lo buscó 😂', created_at: ago(4) },
+    { id: 'nc2', news_id: 'n1', parent_id: 'nc1', user_id: ADMIN_ID, content: '@juli_ la redacción coincide plenamente', created_at: ago(3.5) },
+    { id: 'nc3', news_id: 'n1', parent_id: 'nc1', user_id: 'u1', content: 'Fue un golazo y lo saben', created_at: ago(3) },
+    { id: 'nc4', news_id: 'n1', parent_id: null, user_id: 'u3', content: 'Fuerza Facu, el dedo vuelve más fuerte', created_at: ago(2) },
+  ]
   const gossip = [
     { id: 'g1', user_id: 'u2', protagonist: 'Tomi', content: 'Tomi le dijo a todos que se iba a dormir temprano y lo vieron a las 4 am comprando un pancho en la estación de servicio.', image_path: null, status: 'nuevo', created_at: ago(3) },
     { id: 'g2', user_id: 'u1', protagonist: null, content: 'Alguien del grupo se anotó en un curso de salsa y no le contó a nadie. No voy a decir quién (es Lucía).', image_path: null, status: 'leido', created_at: ago(30) },
@@ -77,7 +83,7 @@ function seed(): Store {
     { action: 'chisme', points: 10, label: 'Cargar un chisme' },
     { action: 'candidata', points: 25, label: 'Postular una candidata' },
   ]
-  return { profiles, news, comments, gossip, candidates, video_ideas, ad_requests, point_rules, instagram_posts: [] as Row[] }
+  return { profiles, news, comments, news_comments, gossip, candidates, video_ideas, ad_requests, point_rules, instagram_posts: [] as Row[] }
 }
 
 let db: Store
@@ -199,7 +205,10 @@ class Query implements PromiseLike<{ data: unknown; error: unknown; count?: numb
   }
   private shape(r: Row) {
     const out = { ...r }
-    if (this.cols.includes('profiles(')) out.profiles = { username: db.profiles.find((p) => p.id === r.user_id)?.username ?? '¿?' }
+    if (this.cols.includes('profiles(')) {
+      const pr = db.profiles.find((p) => p.id === r.user_id)
+      out.profiles = { username: pr?.username ?? '¿?', is_admin: Boolean(pr?.is_admin) }
+    }
     return out
   }
 
@@ -218,6 +227,12 @@ class Query implements PromiseLike<{ data: unknown; error: unknown; count?: numb
         ...(this.table === 'ad_requests' ? { status: 'pendiente' } : {}),
         ...p,
       }))
+      if (this.table === 'news_comments') {
+        for (const it of items) {
+          const parent = it.parent_id ? table.find((t) => t.id === it.parent_id) : null
+          if (parent) { it.news_id = parent.news_id; if (parent.parent_id) it.parent_id = parent.parent_id }
+        }
+      }
       if (this.table === 'news' && items.some((i) => table.some((t) => t.slug === i.slug))) {
         return { data: null, error: { message: 'duplicate key value violates unique constraint "news_slug_key"' } }
       }
@@ -231,7 +246,7 @@ class Query implements PromiseLike<{ data: unknown; error: unknown; count?: numb
         save()
       } else if (this.op === 'delete') {
         const ids = new Set(rows.map((r) => r.id))
-        db[this.table] = table.filter((r) => !ids.has(r.id))
+        db[this.table] = table.filter((r) => !ids.has(r.id) && !ids.has(r.parent_id))
         save()
       }
     }

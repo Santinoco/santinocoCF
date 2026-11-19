@@ -7,6 +7,7 @@ El portal de noticias que nadie pidió. React + Vite + TypeScript + Supabase. Pe
 | Sección | Ruta | Quién lo ve |
 |---|---|---|
 | Novedades (lista + detalle con galería) | `/novedades` | Todos. Las carga solo el admin |
+| Comentarios en cada novedad (con respuestas en hilo) | `/novedades/:slug` | Públicos. Comentan los registrados |
 | Cargá tu chisme | `/chisme` | Lo ve solo el admin (+10 pts) |
 | Casting: se busca novia para Santino | `/casting` | Lo ve solo el admin (+25 pts) |
 | Pedí tu publicidad gratis | `/publicidad` (+ sticker flotante) | Lo ve solo el admin |

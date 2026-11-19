@@ -59,6 +59,16 @@ export interface Comment extends Submission {
   content: string
 }
 
+export interface NewsComment {
+  id: string
+  news_id: string
+  parent_id: string | null
+  user_id: string
+  content: string
+  created_at: string
+  profiles?: { username: string; is_admin?: boolean } | null
+}
+
 export interface LeaderRow {
   user_id: string
   username: string
