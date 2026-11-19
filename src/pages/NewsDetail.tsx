@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { categoryColor } from '../components/NewsCard'
+import NewsComments from '../components/NewsComments'
 import { Spinner } from '../components/ui'
 import { isConfigured, supabase } from '../lib/supabase'
 import type { News } from '../lib/types'
@@ -92,6 +93,8 @@ export default function NewsDetail() {
           <Link to="/chisme" className="btn btn-pink">Cargar chisme</Link>
         </div>
       </div>
+
+      <NewsComments newsId={news.id} />
 
       {zoom && (
         <div className="lightbox" onClick={() => setZoom(null)} role="dialog">

@@ -218,6 +218,50 @@ create trigger rl_comments before insert on public.comments
   for each row execute function public.enforce_rate_limit('5', '10 minutes');
 
 -- ---------------------------------------------------------------------
+-- COMENTARIOS EN LAS NOVEDADES (públicos, con respuestas en hilo)
+-- parent_id = null → comentario principal; si no, es una respuesta.
+-- Los hilos tienen un solo nivel: responder a una respuesta la cuelga
+-- del mismo comentario principal.
+-- ---------------------------------------------------------------------
+create table if not exists public.news_comments (
+  id          uuid primary key default gen_random_uuid(),
+  news_id     uuid not null references public.news (id) on delete cascade,
+  parent_id   uuid references public.news_comments (id) on delete cascade,
+  user_id     uuid not null default auth.uid() references public.profiles (id) on delete cascade,
+  content     text not null check (char_length(btrim(content)) between 2 and 500),
+  created_at  timestamptz not null default now()
+);
+create index if not exists news_comments_news_idx on public.news_comments (news_id, created_at);
+
+create or replace function public.news_comment_thread()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare p record;
+begin
+  if new.parent_id is null then return new; end if;
+  select news_id, parent_id into p from public.news_comments where id = new.parent_id;
+  if not found then raise exception 'El comentario que querés responder ya no existe'; end if;
+  new.news_id := p.news_id;
+  if p.parent_id is not null then new.parent_id := p.parent_id; end if;
+  return new;
+end $$;
+
+drop trigger if exists news_comments_thread on public.news_comments;
+create trigger news_comments_thread before insert on public.news_comments
+  for each row execute function public.news_comment_thread();
+
+alter table public.news_comments enable row level security;
+drop policy if exists "leer comentarios novedades" on public.news_comments;
+create policy "leer comentarios novedades" on public.news_comments for select using (true);
+drop policy if exists "comentar novedades logueado" on public.news_comments;
+create policy "comentar novedades logueado" on public.news_comments for insert to authenticated with check (user_id = auth.uid());
+drop policy if exists "borrar comentario novedad propio o admin" on public.news_comments;
+create policy "borrar comentario novedad propio o admin" on public.news_comments for delete using (user_id = auth.uid() or public.is_admin());
+
+drop trigger if exists rl_news_comments on public.news_comments;
+create trigger rl_news_comments before insert on public.news_comments
+  for each row execute function public.enforce_rate_limit('8', '10 minutes');
+
+-- ---------------------------------------------------------------------
 -- PUNTOS Y RANKING
 -- Los puntos se calculan en vivo a partir de lo cargado: si borrás spam,
 -- los puntos de ese usuario bajan solos. Cambiá los valores acá:
